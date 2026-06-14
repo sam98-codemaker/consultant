@@ -1,0 +1,5 @@
+.DS_Store
+node_modules/
+council.config.json
+ui-dist/
+history/

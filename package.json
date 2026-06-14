@@ -1,0 +1,35 @@
+{
+  "name": "consultant",
+  "version": "0.2.0",
+  "private": true,
+  "description": "A structured conference hall for multiple authenticated AI CLIs.",
+  "type": "module",
+  "bin": {
+    "council": "./src/cli.js"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "server": "node server.js",
+    "dev:ui": "vite ui",
+    "dev": "node server.js & vite ui",
+    "build": "vite build ui --outDir ../ui-dist",
+    "cli": "node src/cli.js",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.1",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-markdown": "^9.0.1",
+    "vite": "^5.4.2"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "allowScripts": {
+    "esbuild@0.21.5": true
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "providers": {
+    "claude": {
+      "enabled": true,
+      "command": "claude",
+      "displayName": "Claude Sonnet",
+      "model": "sonnet"
+    },
+    "gemini": {
+      "enabled": true,
+      "command": "gemini",
+      "displayName": "Gemini Pro"
+    },
+    "grok": {
+      "enabled": true,
+      "command": "grok",
+      "displayName": "Grok"
+    },
+    "codex": {
+      "enabled": true,
+      "command": "codex",
+      "displayName": "OpenAI Codex"
+    }
+  },
+  "judge": "codex",
+  "reviewer": "gemini",
+  "refinement": true,
+  "conference": {
+    "enabled": true,
+    "discussionRounds": 2,
+    "proposalCount": 3,
+    "jsonRepairRetries": 1
+  },
+  "timeoutMs": 180000
+}
