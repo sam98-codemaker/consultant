@@ -90,35 +90,28 @@ app.post("/api/run", async (req, res) => {
     onConferenceParticipant: (result) => push({ type: "participant", result })
   };
 
+  const saveHistory = async (record) => {
+    await writeFile(join(HISTORY_DIR, `${id}.json`), JSON.stringify(record, null, 2));
+  };
+
+  const closeClients = () => {
+    const runEntry = runs.get(id);
+    if (runEntry) for (const client of runEntry.clients) client.end();
+  };
+
   try {
     const result = await runCouncil(question, config, hooks);
     const run = runs.get(id);
-    if (run) {
-      run.result = result;
-      run.done = true;
-    }
+    if (run) { run.result = result; run.done = true; }
     push({ type: "done", run: result });
-
-    // Persist to history
-    const record = { id, ts: new Date().toISOString(), question, result };
-    await writeFile(join(HISTORY_DIR, `${id}.json`), JSON.stringify(record, null, 2));
-
-    // Close SSE clients
-    const runEntry = runs.get(id);
-    if (runEntry) {
-      for (const client of runEntry.clients) client.end();
-    }
+    await saveHistory({ id, ts: new Date().toISOString(), question, status: "done", result });
+    closeClients();
   } catch (err) {
     const run = runs.get(id);
-    if (run) {
-      run.error = err.message;
-      run.done = true;
-    }
+    if (run) { run.error = err.message; run.done = true; }
     push({ type: "error", message: err.message });
-    const runEntry = runs.get(id);
-    if (runEntry) {
-      for (const client of runEntry.clients) client.end();
-    }
+    await saveHistory({ id, ts: new Date().toISOString(), question, status: "error", error: err.message, result: null });
+    closeClients();
   }
 });
 
@@ -160,16 +153,26 @@ app.get("/api/history", async (_req, res) => {
         .filter((f) => f.endsWith(".json"))
         .map(async (f) => {
           const raw = await readFile(join(HISTORY_DIR, f), "utf8");
-          const { id, ts, question, result } = JSON.parse(raw);
+          const { id, ts, question, status, error, result } = JSON.parse(raw);
           const winnerProposal = result?.proposals?.find(
             (p) => p.ok && p.proposalId === result?.election?.winner
           );
+          // Build a short snippet from the winning answer or synthesis
+          const snippetSource =
+            winnerProposal?.data?.answer ??
+            result?.synthesis?.text ??
+            result?.participants?.[0]?.text ??
+            error ??
+            "";
+          const snippet = snippetSource.replace(/[#*`>\-_]/g, "").replace(/\s+/g, " ").trim().slice(0, 120);
           return {
             id,
             ts,
             question,
-            winnerTitle: winnerProposal?.data?.title ?? null,
-            mode: result?.mode ?? "synthesis"
+            status: status ?? "done",
+            mode: result?.mode ?? "synthesis",
+            snippet,
+            winnerTitle: winnerProposal?.data?.title ?? null
           };
         })
     );

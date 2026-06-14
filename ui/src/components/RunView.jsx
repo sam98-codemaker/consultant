@@ -10,7 +10,7 @@ const STAGE_LABELS = {
   voting:     "Vote",
 };
 
-export default function RunView({ runId, question, onDone, onEvent }) {
+export default function RunView({ runId, question, onDone, onError, onEvent }) {
   const [stages, setStages] = useState([]); // [{stage, desc, events[], done}]
   const [loose, setLoose] = useState([]);   // events before first stage
   const [done, setDone] = useState(false);
@@ -72,6 +72,7 @@ export default function RunView({ runId, question, onDone, onEvent }) {
         if (event.type === "error") {
           setError(event.message);
           setDone(true);
+          onError?.();
           es.close();
           return;
         }
@@ -89,6 +90,7 @@ export default function RunView({ runId, question, onDone, onEvent }) {
         if (!done) {
           setError("Connection lost.");
           setDone(true);
+          onError?.();
         }
         es.close();
       };

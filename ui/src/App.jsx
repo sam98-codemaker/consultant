@@ -53,7 +53,12 @@ export default function App() {
   const handleRunDone = useCallback((question, result) => {
     setRunning(false);
     setReportData({ question, result });
-    reloadHistory();
+    setTimeout(reloadHistory, 400); // slight delay so server finishes writing
+  }, [reloadHistory]);
+
+  const handleRunError = useCallback(() => {
+    setRunning(false);
+    setTimeout(reloadHistory, 400);
   }, [reloadHistory]);
 
   const handleHistorySelect = useCallback(async (id) => {
@@ -88,7 +93,7 @@ export default function App() {
           </div>
           <button className="btn-new" onClick={handleNew}>+ New</button>
         </div>
-        <HistoryPanel history={history} onSelect={handleHistorySelect} />
+        <HistoryPanel history={history} activeId={activeRunId} onSelect={handleHistorySelect} />
       </aside>
 
       <div className="workspace">
@@ -118,6 +123,7 @@ export default function App() {
               runId={activeRunId}
               question={activeQuestion}
               onDone={handleRunDone}
+              onError={handleRunError}
               onEvent={scrollToBottom}
             />
           )}
